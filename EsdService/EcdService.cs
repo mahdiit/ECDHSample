@@ -1,9 +1,9 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace ECDHSample
+namespace EcdService
 {
-    public static class EcdService
+    public static class EcdTools
     {
         public static EcdEncryptDto EncryptFromString(string data, ECDiffieHellman senderKey, ECDiffieHellman receiverKey)
         {

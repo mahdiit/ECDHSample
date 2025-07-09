@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 
-namespace ECDHSample;
+namespace EcdService;
 
 public sealed class EcdSignKey(ECDsa key) : EsdKey, IDisposable
 {

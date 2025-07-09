@@ -1,19 +1,25 @@
 ﻿using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 
-namespace ECDHSample;
+namespace EcdService;
 
-public sealed class EcdExchangeKey(ECDiffieHellman key) : EsdKey, IDisposable
+public sealed class EcdExchangeKey : EsdKey, IDisposable
 {
-    public EcdExchangeKey()
-        : this(ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256))
+    public EcdExchangeKey(ECDiffieHellman key)
     {
+        Key = key;
         PrivateKey = Key.ExportPkcs8PrivateKey();
         PublicKey = Key.ExportSubjectPublicKeyInfo();
     }
 
+    public EcdExchangeKey()
+        : this(ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256))
+    {
+
+    }
+
     [JsonIgnore]
-    public ECDiffieHellman Key { get; } = key;
+    public ECDiffieHellman Key { get; }
 
     public void Dispose()
     {
@@ -43,10 +49,4 @@ public sealed class EcdExchangeKey(ECDiffieHellman key) : EsdKey, IDisposable
     {
         return Create(publicKey, null);
     }
-}
-
-public class EsdKey
-{
-    public byte[] PrivateKey { get; protected init; }
-    public byte[] PublicKey { get; protected init; }
 }

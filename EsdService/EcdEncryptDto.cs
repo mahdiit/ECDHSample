@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace ECDHSample;
+namespace EcdService;
 
 public class EcdEncryptDto
 {

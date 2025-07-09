@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using EcdService;
 
 namespace ECDHSample;
 
@@ -25,7 +26,7 @@ static class EcdhEncryptionWithSigning
         //sender
         var sender = EcdExchangeKey.CreatePrivateKey(alice.PrivateKey);
         var receiver = EcdExchangeKey.CreatePublicKey(bob.PublicKey);
-        var encrypted = EcdService.EncryptFromString("hello", sender.Key, receiver.Key);
+        var encrypted = EcdTools.EncryptFromString("hello", sender.Key, receiver.Key);
 
 
 
@@ -35,16 +36,16 @@ static class EcdhEncryptionWithSigning
         //receiver
         sender = EcdExchangeKey.CreatePublicKey(alice.PublicKey);
         receiver = EcdExchangeKey.CreatePrivateKey(bob.PrivateKey);
-        var decrypt = EcdService.DecryptToString(encrypted, sender.Key, receiver.Key);
+        var decrypt = EcdTools.DecryptToString(encrypted, sender.Key, receiver.Key);
         Console.WriteLine(decrypt);
 
         //Sign sender
         var aliceSign = new EcdSignKey();
-        var signature = EcdService.SignData("hello"u8.ToArray(), aliceSign.Key);
+        var signature = EcdTools.SignData("hello"u8.ToArray(), aliceSign.Key);
 
         //Sign receiver
         var bobAliceKey = EcdSignKey.CreatePublicKey(aliceSign.PublicKey);
-        var result = EcdService.VerifyData("hello"u8.ToArray(), signature, bobAliceKey.Key);
+        var result = EcdTools.VerifyData("hello"u8.ToArray(), signature, bobAliceKey.Key);
         Console.WriteLine(result);
 
         Console.ReadKey();
