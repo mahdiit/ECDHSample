@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECDHSample", "ECDHSample\EC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcdService", "EsdService\EcdService.csproj", "{26539371-230B-456D-A584-84CF1828CD9A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcdApi", "EcdApi\EcdApi.csproj", "{BB903473-8F11-42E1-9B0E-ABCDFD7E1BF5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{26539371-230B-456D-A584-84CF1828CD9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26539371-230B-456D-A584-84CF1828CD9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26539371-230B-456D-A584-84CF1828CD9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB903473-8F11-42E1-9B0E-ABCDFD7E1BF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB903473-8F11-42E1-9B0E-ABCDFD7E1BF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB903473-8F11-42E1-9B0E-ABCDFD7E1BF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB903473-8F11-42E1-9B0E-ABCDFD7E1BF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
