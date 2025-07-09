@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace ECDHSample;
 
-public class UrlSafeBase64Converter : JsonConverter<byte[]>
+public class UrlSafeBase64Converter : JsonConverter<byte[]?>
 {
-    public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
             return null;
@@ -14,7 +14,7 @@ public class UrlSafeBase64Converter : JsonConverter<byte[]>
         return string.IsNullOrEmpty(urlSafeBase64) ? [] : FromUrlSafeBase64(urlSafeBase64);
     }
 
-    public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, byte[]? value, JsonSerializerOptions options)
     {
         if (value == null)
         {

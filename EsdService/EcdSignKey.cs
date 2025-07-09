@@ -3,17 +3,23 @@ using System.Text.Json.Serialization;
 
 namespace EcdService;
 
-public sealed class EcdSignKey(ECDsa key) : EsdKey, IDisposable
+public sealed class EcdSignKey : EsdKey, IDisposable
 {
-    public EcdSignKey()
-        : this(ECDsa.Create(ECCurve.NamedCurves.nistP256))
+    private EcdSignKey(ECDsa key)
     {
+        Key = key;
         PrivateKey = Key.ExportPkcs8PrivateKey();
         PublicKey = Key.ExportSubjectPublicKeyInfo();
     }
 
+    public EcdSignKey()
+        : this(ECDsa.Create(ECCurve.NamedCurves.nistP256))
+    {
+
+    }
+
     [JsonIgnore]
-    public ECDsa Key { get; } = key;
+    public ECDsa Key { get; }
 
     public void Dispose()
     {

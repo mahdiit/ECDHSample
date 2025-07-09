@@ -5,7 +5,7 @@ namespace EcdService;
 
 public sealed class EcdExchangeKey : EsdKey, IDisposable
 {
-    public EcdExchangeKey(ECDiffieHellman key)
+    private EcdExchangeKey(ECDiffieHellman key)
     {
         Key = key;
         PrivateKey = Key.ExportPkcs8PrivateKey();
