@@ -6,19 +6,28 @@ static class EcdhEncryptionWithSigning
 {
     static void Main()
     {
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new UrlSafeBase64Converter() },
+            WriteIndented = true
+        };
+
         using var alice = new EcdExchangeKey();
+        var serverKey = JsonSerializer.Serialize(alice);
+        File.WriteAllText("server.json", serverKey);
+
         using var bob = new EcdExchangeKey();
+        var clientKey = JsonSerializer.Serialize(bob);
+        File.WriteAllText("client.json", clientKey);
+
+        Console.ReadKey();
 
         //sender
         var sender = EcdExchangeKey.CreatePrivateKey(alice.PrivateKey);
         var receiver = EcdExchangeKey.CreatePublicKey(bob.PublicKey);
         var encrypted = EcdService.EncryptFromString("hello", sender.Key, receiver.Key);
 
-        var options = new JsonSerializerOptions
-        {
-            Converters = { new UrlSafeBase64Converter() },
-            WriteIndented = true
-        };
+
 
         string json = JsonSerializer.Serialize(encrypted, options);
         var obj = JsonSerializer.Deserialize<EcdEncryptDto>(json, options);
