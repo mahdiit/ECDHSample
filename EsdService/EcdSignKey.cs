@@ -1,4 +1,6 @@
 ﻿using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace EcdService;
@@ -22,6 +24,11 @@ public sealed class EcdSignKey : EcdKey, IDisposable
         Key.Dispose();
     }
 
+    public string ToJson()
+    {
+        return JsonSerializer.Serialize(this, EcdTools.KeyJsonOption);
+    }
+
     public static EcdSignKey Create(byte[]? publicKey = null, byte[]? privateKey = null)
     {
         if (privateKey != null)
@@ -41,13 +48,49 @@ public sealed class EcdSignKey : EcdKey, IDisposable
         return new EcdSignKey(ECDsa.Create(ECCurve.NamedCurves.nistP256), EcdKeyType.PublicAndPrivate);
     }
 
-    public static EcdSignKey CreatePrivateKey(byte[] privateKey)
+    public static EcdSignKey CreateFromPrivateKey(byte[] privateKey)
     {
         return Create(null, privateKey);
     }
 
-    public static EcdSignKey CreatePublicKey(byte[] publicKey)
+    public static EcdSignKey CreateFromPublicKey(byte[] publicKey)
     {
         return Create(publicKey, null);
+    }
+
+    public static EcdSignKey CreateFromJson(string jsonKey)
+    {
+        var ecdKey = JsonSerializer.Deserialize<EcdKey>(jsonKey, EcdTools.KeyJsonOption);
+
+        if (ecdKey == null)
+            throw new InvalidOperationException("Cannot deserialize key");
+
+        return Create(ecdKey.PublicKey, ecdKey.PrivateKey);
+    }
+
+    public static ReadOnlySpan<byte> SignData(string data, EcdSignKey senderKey)
+    {
+        return SignData(Encoding.UTF8.GetBytes(data), senderKey);
+    }
+
+    public static ReadOnlySpan<byte> SignData(ReadOnlySpan<byte> data, EcdSignKey senderKey)
+    {
+        if (senderKey.PrivateKey == null)
+            throw new ArgumentNullException(nameof(senderKey.PrivateKey), "Sender private key can not be null for sign");
+
+        return senderKey.Key.SignData(data, HashAlgorithmName.SHA256);
+    }
+
+    public static bool VerifyData(string data, ReadOnlySpan<byte> signData, EcdSignKey senderKey)
+    {
+        return VerifyData(Encoding.UTF8.GetBytes(data), signData, senderKey);
+    }
+
+    public static bool VerifyData(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signData, EcdSignKey senderKey)
+    {
+        if (senderKey.PublicKey == null)
+            throw new ArgumentNullException(nameof(senderKey.PublicKey), "Sender public key can not be null for verify");
+
+        return senderKey.Key.VerifyData(data, signData, HashAlgorithmName.SHA256);
     }
 }

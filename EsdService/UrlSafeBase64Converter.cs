@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ECDHSample;
+namespace EcdService;
 
 public class UrlSafeBase64Converter : JsonConverter<byte[]?>
 {

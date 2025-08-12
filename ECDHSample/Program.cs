@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using EcdService;
+﻿using EcdService;
 
 namespace ECDHSample;
 
@@ -7,53 +6,44 @@ static class EcdhEncryptionWithSigning
 {
     static void Main()
     {
-        var options = new JsonSerializerOptions
-        {
-            Converters = { new UrlSafeBase64Converter() },
-            WriteIndented = true,
-
-        };
-
         using var alice = EcdExchangeKey.Create();
-        var serverKey = JsonSerializer.Serialize(alice);
+        var serverKey = alice.ToJson();
         File.WriteAllText("exchangeKey-server.json", serverKey);
 
-        var aliceDeserialize = JsonSerializer.Deserialize<EcdKey>(serverKey);
-        Console.WriteLine(aliceDeserialize?.KeyType);
+        using var aliceDeserialize = EcdExchangeKey.CreateFromJson(serverKey);
+        Console.WriteLine(aliceDeserialize.KeyType);
 
         using var bob = EcdExchangeKey.Create();
-        var clientKey = JsonSerializer.Serialize(bob);
+        var clientKey = bob.ToJson();
         File.WriteAllText("exchangeKey-client.json", clientKey);
 
         //sender
-        var sender = EcdExchangeKey.CreatePrivateKey(aliceDeserialize.PrivateKey);
-        var receiver = EcdExchangeKey.CreatePublicKey(bob.PublicKey);
-        var encrypted = EcdTools.EncryptFromString("hello", sender.Key, receiver.Key);
+        var receiver = EcdExchangeKey.CreateFromPublicKey(bob.PublicKey);
+        var encrypted = EcdExchangeKey.EncryptString("hello", aliceDeserialize, receiver);
 
-
-
-        string json = JsonSerializer.Serialize(encrypted, options);
-        var obj = JsonSerializer.Deserialize<EcdEncryptDto>(json, options);
+        string json = encrypted.ToJson();
+        var obj = EcdEncryptDto.CreateFromJson(json);
+        Console.WriteLine(obj.Tag.Length);
 
         //receiver
-        sender = EcdExchangeKey.CreatePublicKey(alice.PublicKey);
-        receiver = EcdExchangeKey.CreatePrivateKey(bob.PrivateKey);
-        var decrypt = EcdTools.DecryptToString(encrypted, sender.Key, receiver.Key);
+        var sender = EcdExchangeKey.CreateFromPublicKey(alice.PublicKey);
+        receiver = EcdExchangeKey.CreateFromPrivateKey(bob.PrivateKey);
+        var decrypt = EcdExchangeKey.DecryptString(encrypted, sender, receiver);
         Console.WriteLine(decrypt);
 
         //Sign sender
         var aliceSign = EcdSignKey.Create();
-        var sigKey = JsonSerializer.Serialize(aliceSign);
+        var sigKey = aliceSign.ToJson();
         File.WriteAllText("signKey-server.json", clientKey);
 
-        var aliceSignDeserialize = JsonSerializer.Deserialize<EcdKey>(sigKey);
-        Console.WriteLine(aliceSignDeserialize?.KeyType);
+        var aliceSignDeserialize = EcdSignKey.CreateFromJson(sigKey);
+        Console.WriteLine(aliceSignDeserialize.KeyType);
 
-        var signature = EcdTools.SignData("hello"u8.ToArray(), EcdSignKey.CreatePrivateKey(aliceSignDeserialize.PrivateKey).Key);
+        var signature = EcdSignKey.SignData("hello"u8.ToArray(), aliceSignDeserialize);
 
         //Sign receiver
-        var bobAliceKey = EcdSignKey.CreatePublicKey(aliceSignDeserialize.PublicKey);
-        var result = EcdTools.VerifyData("hello"u8.ToArray(), signature, bobAliceKey.Key);
+        var bobAliceKey = EcdSignKey.CreateFromPublicKey(aliceSignDeserialize.PublicKey);
+        var result = EcdSignKey.VerifyData("hello"u8.ToArray(), signature, bobAliceKey);
         Console.WriteLine(result);
 
         Console.ReadKey();
