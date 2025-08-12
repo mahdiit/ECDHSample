@@ -5,15 +5,17 @@ namespace EcdService;
 
 public sealed class EcdExchangeKey : EsdKey, IDisposable
 {
-    private EcdExchangeKey(ECDiffieHellman key)
+    private EcdExchangeKey(ECDiffieHellman key, EsdKeyType keyType)
+        : base(
+            keyType is EsdKeyType.Private or EsdKeyType.PublicAndPrivate ? key.ExportPkcs8PrivateKey() : null,
+            keyType is EsdKeyType.Public or EsdKeyType.PublicAndPrivate ? key.ExportSubjectPublicKeyInfo() : null
+            )
     {
         Key = key;
-        PrivateKey = Key.ExportPkcs8PrivateKey();
-        PublicKey = Key.ExportSubjectPublicKeyInfo();
     }
 
     public EcdExchangeKey()
-        : this(ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256))
+        : this(ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256), EsdKeyType.PublicAndPrivate)
     {
 
     }
@@ -28,16 +30,20 @@ public sealed class EcdExchangeKey : EsdKey, IDisposable
 
     private static EcdExchangeKey Create(byte[]? publicKey, byte[]? privateKey)
     {
-        var key = ECDiffieHellman.Create();
         if (privateKey != null)
         {
+            var key = ECDiffieHellman.Create();
             key.ImportPkcs8PrivateKey(privateKey, out _);
+            return new EcdExchangeKey(key, EsdKeyType.Private);
         }
         else if (publicKey != null)
         {
+            var key = ECDiffieHellman.Create();
             key.ImportSubjectPublicKeyInfo(publicKey, out _);
+            return new EcdExchangeKey(key, EsdKeyType.Public);
         }
-        return new EcdExchangeKey(key);
+
+        throw new ArgumentNullException(nameof(publicKey), "All key is empty, must provide public or private key");
     }
 
     public static EcdExchangeKey CreatePrivateKey(byte[] privateKey)

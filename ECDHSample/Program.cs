@@ -15,11 +15,11 @@ static class EcdhEncryptionWithSigning
 
         using var alice = new EcdExchangeKey();
         var serverKey = JsonSerializer.Serialize(alice);
-        File.WriteAllText("server.json", serverKey);
+        File.WriteAllText("exchangeKey-server.json", serverKey);
 
         using var bob = new EcdExchangeKey();
         var clientKey = JsonSerializer.Serialize(bob);
-        File.WriteAllText("client.json", clientKey);
+        File.WriteAllText("exchangeKey-client.json", clientKey);
 
         Console.ReadKey();
 
@@ -41,6 +41,9 @@ static class EcdhEncryptionWithSigning
 
         //Sign sender
         var aliceSign = new EcdSignKey();
+        var sigKey = JsonSerializer.Serialize(aliceSign);
+        File.WriteAllText("signKey-server.json", clientKey);
+
         var signature = EcdTools.SignData("hello"u8.ToArray(), aliceSign.Key);
 
         //Sign receiver
