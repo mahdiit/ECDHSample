@@ -3,21 +3,15 @@ using System.Text.Json.Serialization;
 
 namespace EcdService;
 
-public sealed class EcdExchangeKey : EsdKey, IDisposable
+public sealed class EcdExchangeKey : EcdKey, IDisposable
 {
-    private EcdExchangeKey(ECDiffieHellman key, EsdKeyType keyType)
+    private EcdExchangeKey(ECDiffieHellman key, EcdKeyType keyType)
         : base(
-            keyType is EsdKeyType.Private or EsdKeyType.PublicAndPrivate ? key.ExportPkcs8PrivateKey() : null,
-            keyType is EsdKeyType.Public or EsdKeyType.PublicAndPrivate ? key.ExportSubjectPublicKeyInfo() : null
+            keyType is EcdKeyType.Private or EcdKeyType.PublicAndPrivate ? key.ExportPkcs8PrivateKey() : null,
+            keyType is EcdKeyType.Public or EcdKeyType.PublicAndPrivate ? key.ExportSubjectPublicKeyInfo() : null
             )
     {
         Key = key;
-    }
-
-    public EcdExchangeKey()
-        : this(ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256), EsdKeyType.PublicAndPrivate)
-    {
-
     }
 
     [JsonIgnore]
@@ -28,22 +22,23 @@ public sealed class EcdExchangeKey : EsdKey, IDisposable
         Key.Dispose();
     }
 
-    private static EcdExchangeKey Create(byte[]? publicKey, byte[]? privateKey)
+    public static EcdExchangeKey Create(byte[]? publicKey = null, byte[]? privateKey = null)
     {
         if (privateKey != null)
         {
             var key = ECDiffieHellman.Create();
             key.ImportPkcs8PrivateKey(privateKey, out _);
-            return new EcdExchangeKey(key, EsdKeyType.Private);
+            return new EcdExchangeKey(key, EcdKeyType.Private);
         }
-        else if (publicKey != null)
+
+        if (publicKey != null)
         {
             var key = ECDiffieHellman.Create();
             key.ImportSubjectPublicKeyInfo(publicKey, out _);
-            return new EcdExchangeKey(key, EsdKeyType.Public);
+            return new EcdExchangeKey(key, EcdKeyType.Public);
         }
 
-        throw new ArgumentNullException(nameof(publicKey), "All key is empty, must provide public or private key");
+        return new EcdExchangeKey(ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256), EcdKeyType.PublicAndPrivate);
     }
 
     public static EcdExchangeKey CreatePrivateKey(byte[] privateKey)

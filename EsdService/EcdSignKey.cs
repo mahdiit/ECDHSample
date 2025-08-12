@@ -3,21 +3,15 @@ using System.Text.Json.Serialization;
 
 namespace EcdService;
 
-public sealed class EcdSignKey : EsdKey, IDisposable
+public sealed class EcdSignKey : EcdKey, IDisposable
 {
-    private EcdSignKey(ECDsa key, EsdKeyType keyType)
+    private EcdSignKey(ECDsa key, EcdKeyType keyType)
         : base(
-            keyType is EsdKeyType.Private or EsdKeyType.PublicAndPrivate ? key.ExportPkcs8PrivateKey() : null,
-            keyType is EsdKeyType.Public or EsdKeyType.PublicAndPrivate ? key.ExportSubjectPublicKeyInfo() : null
+            keyType is EcdKeyType.Private or EcdKeyType.PublicAndPrivate ? key.ExportPkcs8PrivateKey() : null,
+            keyType is EcdKeyType.Public or EcdKeyType.PublicAndPrivate ? key.ExportSubjectPublicKeyInfo() : null
         )
     {
         Key = key;
-    }
-
-    public EcdSignKey()
-        : this(ECDsa.Create(ECCurve.NamedCurves.nistP256), EsdKeyType.PublicAndPrivate)
-    {
-
     }
 
     [JsonIgnore]
@@ -28,22 +22,23 @@ public sealed class EcdSignKey : EsdKey, IDisposable
         Key.Dispose();
     }
 
-    private static EcdSignKey Create(byte[]? publicKey, byte[]? privateKey)
+    public static EcdSignKey Create(byte[]? publicKey = null, byte[]? privateKey = null)
     {
         if (privateKey != null)
         {
             var key = ECDsa.Create();
             key.ImportPkcs8PrivateKey(privateKey, out _);
-            return new EcdSignKey(key, EsdKeyType.Private);
+            return new EcdSignKey(key, EcdKeyType.Private);
         }
-        else if (publicKey != null)
+
+        if (publicKey != null)
         {
             var key = ECDsa.Create();
             key.ImportSubjectPublicKeyInfo(publicKey, out _);
-            return new EcdSignKey(key, EsdKeyType.Public);
+            return new EcdSignKey(key, EcdKeyType.Public);
         }
 
-        throw new ArgumentNullException(nameof(publicKey), "All key is empty, must provide public or private key");
+        return new EcdSignKey(ECDsa.Create(ECCurve.NamedCurves.nistP256), EcdKeyType.PublicAndPrivate);
     }
 
     public static EcdSignKey CreatePrivateKey(byte[] privateKey)

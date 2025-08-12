@@ -10,21 +10,23 @@ static class EcdhEncryptionWithSigning
         var options = new JsonSerializerOptions
         {
             Converters = { new UrlSafeBase64Converter() },
-            WriteIndented = true
+            WriteIndented = true,
+
         };
 
-        using var alice = new EcdExchangeKey();
+        using var alice = EcdExchangeKey.Create();
         var serverKey = JsonSerializer.Serialize(alice);
         File.WriteAllText("exchangeKey-server.json", serverKey);
 
-        using var bob = new EcdExchangeKey();
+        var aliceDeserialize = JsonSerializer.Deserialize<EcdKey>(serverKey);
+        Console.WriteLine(aliceDeserialize?.KeyType);
+
+        using var bob = EcdExchangeKey.Create();
         var clientKey = JsonSerializer.Serialize(bob);
         File.WriteAllText("exchangeKey-client.json", clientKey);
 
-        Console.ReadKey();
-
         //sender
-        var sender = EcdExchangeKey.CreatePrivateKey(alice.PrivateKey);
+        var sender = EcdExchangeKey.CreatePrivateKey(aliceDeserialize.PrivateKey);
         var receiver = EcdExchangeKey.CreatePublicKey(bob.PublicKey);
         var encrypted = EcdTools.EncryptFromString("hello", sender.Key, receiver.Key);
 
@@ -40,14 +42,17 @@ static class EcdhEncryptionWithSigning
         Console.WriteLine(decrypt);
 
         //Sign sender
-        var aliceSign = new EcdSignKey();
+        var aliceSign = EcdSignKey.Create();
         var sigKey = JsonSerializer.Serialize(aliceSign);
         File.WriteAllText("signKey-server.json", clientKey);
 
-        var signature = EcdTools.SignData("hello"u8.ToArray(), aliceSign.Key);
+        var aliceSignDeserialize = JsonSerializer.Deserialize<EcdKey>(sigKey);
+        Console.WriteLine(aliceSignDeserialize?.KeyType);
+
+        var signature = EcdTools.SignData("hello"u8.ToArray(), EcdSignKey.CreatePrivateKey(aliceSignDeserialize.PrivateKey).Key);
 
         //Sign receiver
-        var bobAliceKey = EcdSignKey.CreatePublicKey(aliceSign.PublicKey);
+        var bobAliceKey = EcdSignKey.CreatePublicKey(aliceSignDeserialize.PublicKey);
         var result = EcdTools.VerifyData("hello"u8.ToArray(), signature, bobAliceKey.Key);
         Console.WriteLine(result);
 
