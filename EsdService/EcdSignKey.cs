@@ -17,7 +17,7 @@ public sealed class EcdSignKey : EcdKey, IDisposable
     }
 
     [JsonIgnore]
-    public ECDsa Key { get; }
+    private ECDsa Key { get; }
 
     public void Dispose()
     {

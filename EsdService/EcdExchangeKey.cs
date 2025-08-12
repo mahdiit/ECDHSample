@@ -17,7 +17,7 @@ public sealed class EcdExchangeKey : EcdKey, IDisposable
     }
 
     [JsonIgnore]
-    public ECDiffieHellman Key { get; }
+    private ECDiffieHellman Key { get; }
 
     public void Dispose()
     {
