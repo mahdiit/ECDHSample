@@ -323,12 +323,4 @@ switch (key.KeyType)
 
 ## License
 
-[Add your license information here]
-
-## Contributing
-
-[Add contributing guidelines here]
-
-## Support
-
-[Add support information here]
+This project is licensed under the terms specified in the LICENSE.txt file.
