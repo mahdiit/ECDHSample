@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace EcdService;
+namespace Gufel.EcdKey;
 
 public sealed class EcdExchangeKey : EcdKey, IDisposable
 {

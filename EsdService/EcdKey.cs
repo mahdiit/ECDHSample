@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace EcdService;
+namespace Gufel.EcdKey;
 
 public class EcdKey
 {

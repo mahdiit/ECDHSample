@@ -1,4 +1,4 @@
-﻿using EcdService;
+﻿using Gufel.EcdKey;
 
 namespace ECDHSample;
 

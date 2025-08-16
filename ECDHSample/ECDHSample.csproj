@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EsdService\EcdService.csproj" />
+    <ProjectReference Include="..\EsdService\Gufel.EcdKey.csproj" />
   </ItemGroup>
 
 </Project>

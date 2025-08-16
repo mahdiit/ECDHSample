@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace EcdService;
+namespace Gufel.EcdKey;
 
 public class EcdEncryptDto
 {
