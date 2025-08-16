@@ -14,13 +14,13 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/mahdiit/ECDHSample</RepositoryUrl>
 		<PackageTags>diffie-hellman,encryption,decryption,digital-signature,elliptic-curve</PackageTags>
-		<PackageIcon>icon.png</PackageIcon>
+		<PackageIcon>icon.jpg</PackageIcon>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/mahdiit/ECDHSample</PackageProjectUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="icon.png">
+		<None Include="icon.jpg">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
