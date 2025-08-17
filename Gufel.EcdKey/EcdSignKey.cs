@@ -28,7 +28,7 @@ public sealed class EcdSignKey : EcdKey, IDisposable
 
         EcdKeyJsonModel? keyData = null;
 
-        switch (KeyType)
+        switch (keyType)
         {
             case EcdKeyType.Private:
                 {
