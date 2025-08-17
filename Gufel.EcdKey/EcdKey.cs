@@ -7,25 +7,11 @@ public class EcdKey
     [JsonConstructor]
     private EcdKey() { }
 
-    public byte[]? PrivateKey { get; init; }
-    public byte[]? PublicKey { get; init; }
-    public EcdKeyType KeyType { get; init; }
+    public EcdKeyType KeyType { get; }
 
-    protected EcdKey(byte[]? privateKey, byte[]? publicKey)
+    protected EcdKey(EcdKeyType keyType)
     {
-        if (publicKey == null && privateKey == null)
-            throw new ArgumentNullException(nameof(publicKey), "All key is empty, must provide public or private key");
-
-        PrivateKey = privateKey;
-        PublicKey = publicKey;
-
-        if (privateKey != null && publicKey != null)
-            KeyType = EcdKeyType.PublicAndPrivate;
-        else if (publicKey != null)
-            KeyType = EcdKeyType.Public;
-        else if (privateKey != null)
-            KeyType = EcdKeyType.Private;
-
+        KeyType = keyType;
     }
 }
 

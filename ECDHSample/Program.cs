@@ -6,55 +6,37 @@ static class EcdhEncryptionWithSigning
 {
     static void Main()
     {
-        using var alice = EcdExchangeKey.Create();
-        var serverKey = alice.ToJson();
-        File.WriteAllText("exchangeKey-server.json", serverKey);
+        using var serverKey = EcdExchangeKey.Create();
+        File.WriteAllText("exchangeKey-server-private.json", serverKey.ToJson(EcdKeyType.Private));
+        File.WriteAllText("exchangeKey-server-public.json", serverKey.ToJson(EcdKeyType.Public));
 
-        using var aliceDeserialize = EcdExchangeKey.CreateFromJson(serverKey);
-        Console.WriteLine(aliceDeserialize.KeyType);
-
-        using var bob = EcdExchangeKey.Create();
-        var clientKey = bob.ToJson();
-        File.WriteAllText("exchangeKey-client.json", clientKey);
+        using var clientKey = EcdExchangeKey.Create();
+        File.WriteAllText("exchangeKey-client-private.json", clientKey.ToJson(EcdKeyType.Private));
+        File.WriteAllText("exchangeKey-client-public.json", clientKey.ToJson(EcdKeyType.Public));
 
         //sender
-        var receiver = EcdExchangeKey.CreateFromPublicKey(bob.PublicKey);
-        var encrypted = EcdExchangeKey.EncryptString("hello", aliceDeserialize, receiver);
+        var serverEncrypted = EcdExchangeKey.EncryptString("Server Private Message!", serverKey, EcdExchangeKey.CreateFromJson(File.ReadAllText("exchangeKey-client-public.json")));
 
-        string json = encrypted.ToJson();
+        var json = serverEncrypted.ToJson();
         var obj = EcdEncryptDto.CreateFromJson(json);
-        Console.WriteLine(obj.Tag.Length);
+        Console.WriteLine($"Tag length: {obj.Tag.Length}");
 
         //receiver
-        var sender = EcdExchangeKey.CreateFromPublicKey(alice.PublicKey);
-        receiver = EcdExchangeKey.CreateFromPrivateKey(bob.PrivateKey);
-        var decrypt = EcdExchangeKey.DecryptString(encrypted, sender, receiver);
-        Console.WriteLine(decrypt);
+        var clientDecrypted = EcdExchangeKey.DecryptString(serverEncrypted, EcdExchangeKey.CreateFromJson(File.ReadAllText("exchangeKey-server-public.json")), clientKey);
+        Console.WriteLine(clientDecrypted);
 
         //Sign sender
-        var aliceSign = EcdSignKey.Create();
-        var sigKey = aliceSign.ToJson();
-        File.WriteAllText("signKey-server.json", clientKey);
+        var serverSignKey = EcdSignKey.Create();
+        File.WriteAllText("signKey-server-private.json", serverSignKey.ToJson(EcdKeyType.Private));
+        File.WriteAllText("signKey-server-public.json", serverSignKey.ToJson(EcdKeyType.Public));
 
-        var aliceSignDeserialize = EcdSignKey.CreateFromJson(sigKey);
-        Console.WriteLine(aliceSignDeserialize.KeyType);
-
-        var signature = EcdSignKey.SignData("hello"u8.ToArray(), aliceSignDeserialize);
+        var signature = EcdSignKey.SignData("Server Private Message!"u8.ToArray(), serverSignKey);
 
         //Sign receiver
-        var bobAliceKey = EcdSignKey.CreateFromPublicKey(aliceSignDeserialize.PublicKey);
-        var result = EcdSignKey.VerifyData("hello"u8.ToArray(), signature, bobAliceKey);
-        Console.WriteLine(result);
+        var result = EcdSignKey.VerifyData("Server Private Message!"u8.ToArray(), signature, EcdSignKey.CreateFromJson(File.ReadAllText("signKey-server-public.json")));
+        Console.WriteLine($"Verify result : {result}");
 
+        Console.WriteLine("-------------- End --------------");
         Console.ReadKey();
-
-    }
-
-    static ReadOnlySpan<byte> Combine(byte[] a, byte[] b)
-    {
-        var result = new byte[a.Length + b.Length];
-        Buffer.BlockCopy(a, 0, result, 0, a.Length);
-        Buffer.BlockCopy(b, 0, result, a.Length, b.Length);
-        return result;
     }
 }

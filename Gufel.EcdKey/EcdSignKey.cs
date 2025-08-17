@@ -8,10 +8,7 @@ namespace Gufel.EcdKey;
 public sealed class EcdSignKey : EcdKey, IDisposable
 {
     private EcdSignKey(ECDsa key, EcdKeyType keyType)
-        : base(
-            keyType is EcdKeyType.Private or EcdKeyType.PublicAndPrivate ? key.ExportPkcs8PrivateKey() : null,
-            keyType is EcdKeyType.Public or EcdKeyType.PublicAndPrivate ? key.ExportSubjectPublicKeyInfo() : null
-        )
+        : base(keyType)
     {
         Key = key;
     }
@@ -24,48 +21,78 @@ public sealed class EcdSignKey : EcdKey, IDisposable
         Key.Dispose();
     }
 
-    public string ToJson()
+    public string ToJson(EcdKeyType keyType)
     {
-        return JsonSerializer.Serialize(this, EcdTools.KeyJsonOption);
+        if (keyType == EcdKeyType.None)
+            throw new InvalidOperationException("can not export data from key type");
+
+        EcdKeyJsonModel? keyData = null;
+
+        switch (KeyType)
+        {
+            case EcdKeyType.Private:
+                {
+                    var ecParams = Key.ExportParameters(true);
+                    keyData = new EcdKeyJsonModel
+                    {
+                        Curve = ecParams.Curve.Oid.FriendlyName,
+                        D = ecParams.D
+                    };
+                    break;
+                }
+            case EcdKeyType.Public:
+                {
+                    var ecParams = Key.ExportParameters(false);
+                    keyData = new EcdKeyJsonModel
+                    {
+                        Curve = ecParams.Curve.Oid.FriendlyName,
+                        X = ecParams.Q.X,
+                        Y = ecParams.Q.Y
+                    };
+                    break;
+                }
+            case EcdKeyType.PublicAndPrivate:
+                {
+                    var ecParams = Key.ExportParameters(true);
+                    keyData = new EcdKeyJsonModel
+                    {
+                        Curve = ecParams.Curve.Oid.FriendlyName,
+                        D = ecParams.D,
+                        X = ecParams.Q.X,
+                        Y = ecParams.Q.Y
+                    };
+                    break;
+                }
+        }
+
+        return JsonSerializer.Serialize(keyData, EcdTools.KeyJsonOption);
     }
 
-    public static EcdSignKey Create(byte[]? publicKey = null, byte[]? privateKey = null)
+    public static EcdSignKey Create()
     {
-        if (privateKey != null)
-        {
-            var key = ECDsa.Create();
-            key.ImportPkcs8PrivateKey(privateKey, out _);
-            return new EcdSignKey(key, EcdKeyType.Private);
-        }
-
-        if (publicKey != null)
-        {
-            var key = ECDsa.Create();
-            key.ImportSubjectPublicKeyInfo(publicKey, out _);
-            return new EcdSignKey(key, EcdKeyType.Public);
-        }
-
         return new EcdSignKey(ECDsa.Create(ECCurve.NamedCurves.nistP256), EcdKeyType.PublicAndPrivate);
-    }
-
-    public static EcdSignKey CreateFromPrivateKey(byte[] privateKey)
-    {
-        return Create(null, privateKey);
-    }
-
-    public static EcdSignKey CreateFromPublicKey(byte[] publicKey)
-    {
-        return Create(publicKey, null);
     }
 
     public static EcdSignKey CreateFromJson(string jsonKey)
     {
-        var ecdKey = JsonSerializer.Deserialize<EcdKey>(jsonKey, EcdTools.KeyJsonOption);
+        var ecdKey = JsonSerializer.Deserialize<EcdKeyJsonModel>(jsonKey, EcdTools.KeyJsonOption);
 
-        if (ecdKey == null)
+        if (ecdKey is null || string.IsNullOrEmpty(ecdKey.Curve))
             throw new InvalidOperationException("Cannot deserialize key");
 
-        return Create(ecdKey.PublicKey, ecdKey.PrivateKey);
+        var loadedParams = new ECParameters
+        {
+            Curve = ECCurve.CreateFromFriendlyName(ecdKey.Curve),
+            D = ecdKey.D,
+            Q = new ECPoint
+            {
+                X = ecdKey.X,
+                Y = ecdKey.Y
+            }
+        };
+
+        var restored = ECDsa.Create(loadedParams);
+        return new EcdSignKey(restored, ecdKey.KeyType);
     }
 
     public static ReadOnlySpan<byte> SignData(string data, EcdSignKey senderKey)
@@ -75,8 +102,8 @@ public sealed class EcdSignKey : EcdKey, IDisposable
 
     public static ReadOnlySpan<byte> SignData(ReadOnlySpan<byte> data, EcdSignKey senderKey)
     {
-        if (senderKey.PrivateKey == null)
-            throw new ArgumentNullException(nameof(senderKey.PrivateKey), "Sender private key can not be null for sign");
+        if (senderKey.KeyType is EcdKeyType.Public or EcdKeyType.None)
+            throw new ArgumentNullException(nameof(senderKey), "Sender private key can not be null for sign");
 
         return senderKey.Key.SignData(data, HashAlgorithmName.SHA256);
     }
@@ -88,9 +115,6 @@ public sealed class EcdSignKey : EcdKey, IDisposable
 
     public static bool VerifyData(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signData, EcdSignKey senderKey)
     {
-        if (senderKey.PublicKey == null)
-            throw new ArgumentNullException(nameof(senderKey.PublicKey), "Sender public key can not be null for verify");
-
         return senderKey.Key.VerifyData(data, signData, HashAlgorithmName.SHA256);
     }
 }
