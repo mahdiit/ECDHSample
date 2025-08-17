@@ -9,7 +9,7 @@
 		<PackageId>Gufel.EcdKey</PackageId>
 		<Title></Title>
 		<Authors>mahdiit</Authors>
-		<Version>1.1.1</Version>
+		<Version>1.1.2</Version>
 		<Description>A comprehensive .NET library for Elliptic Curve Diffie-Hellman (ECDH) key exchange, encryption/decryption, and digital signatures using Elliptic Curve Digital Signature Algorithm (ECDSA)</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/mahdiit/ECDHSample</RepositoryUrl>
@@ -17,7 +17,7 @@
 		<PackageIcon>icon.jpg</PackageIcon>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/mahdiit/ECDHSample</PackageProjectUrl>
-		<PackageReleaseNotes Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">fix bug in key json</PackageReleaseNotes>
+		<PackageReleaseNotes Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">fix bug in key loader json</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
