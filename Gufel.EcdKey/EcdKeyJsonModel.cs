@@ -16,7 +16,7 @@ public record EcdKeyJsonModel
                 return EcdKeyType.PublicAndPrivate;
 
             if (D != null && X == null && Y == null)
-                return EcdKeyType.Public;
+                return EcdKeyType.Private;
 
             return EcdKeyType.None;
         }
